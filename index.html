@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-weight: normal;
+            font-style: normal;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            vertical-align: baseline;
+        }
+
+        #container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: url(./peko\ back.gif);
+            background-position: center center;
+            background-size: cover;
+            color: white;
+            font-size: 20px;
+        }
+
+        /* 遊戲區 */
+        #game {
+
+            /*  50 50讓滑鼠中心對準準心 預設是左上角 要加auto 否則會沒作用 */
+            cursor: url(./cursor_black.png) 50 50, auto;
+
+            position: absolute;
+            left: 20%;
+            top: 30%;
+            user-select: none;
+            -webkit-user-drag: none;
+
+            /* 表格間距 水平間距 垂直間距 */
+            border-spacing: 50px 0;
+
+        }
+
+        /* 資訊區 */
+        .info {
+            position: fixed;
+            top: 3%;
+            margin: 10px;
+        }
+
+        /* 按鍵 */
+        .key {
+            width: 70px;
+            height: 70px;
+            background: white;
+            margin-left: 61.5px;
+            position: relative;
+            top: 17%;
+            left: 19.7%;
+            float: left;
+            color: black;
+            text-align: center;
+            line-height: 70px;
+            font-size: 50px;
+            border-radius: 15px;
+            box-shadow: 0 10px #999;
+
+        }
+
+        /* 按鍵按下去效果 */
+        .key1 {
+            width: 70px;
+            height: 70px;
+            background: white;
+            margin-left: 61.5px;
+            position: relative;
+            top: 17%;
+            left: 19.7%;
+            float: left;
+            color: black;
+            text-align: center;
+            line-height: 70px;
+            font-size: 50px;
+            border-radius: 15px;
+            box-shadow: 0 10px #999;
+            animation: animation2 0.1s 1 linear alternate;
+        }
+
+        /* 譜面 */
+        .holes {
+            width: 70px;
+            height: 450px;
+            /* 玻璃擬態 */
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(1.5px);
+            -webkit-backdrop-filter: blur(1.5px);
+            border-radius: 10px;
+            border: 5px solid rgba(255, 255, 255, 0.7);
+
+            /* 浮起來的效果 */
+            -webkit-transition: all 250ms cubic-bezier(0.02, 0.01, 0.47, 1);
+            transition: all 250ms cubic-bezier(.02, .01, .47, 1);
+            -webkit-box-reflect: below -75px linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+        }
+
+        .holes:hover {
+            filter: drop-shadow(16px 16px 20px yellow) invert(100%);
+            transform: translate(0, -5px);
+            border: 5px solid rgba(255, 255, 255, 1);
+        }
+
+        /* 音符 */
+        .block {
+            width: 25px;
+            height: 25px;
+            background: lightpink;
+            transform: rotate(45deg);
+
+            border: 10px solid black;
+            position: absolute;
+            top: 0%;
+            left: 18%;
+            animation: animation 3s 1 linear normal;
+            cursor: pointer;
+        }
+
+        .block:hover {
+            filter: hue-rotate(180deg)
+        }
+
+        /* 點擊音符後的取代 */
+        .block1 {
+            width: 25px;
+            height: 25px;
+            background: lightskyblue;
+            transform: rotate(45deg);
+            border: 5px solid white;
+            position: absolute;
+            top: 83%;
+            left: 25%;
+            animation: animation1 0.5s 1 linear normal;
+            opacity: 0.4;
+            background-image: url(./oil.jpg);
+        }
+
+        /* 譜面中的線 */
+        .line {
+            width: 5%;
+            height: 100%;
+            background: black;
+            position: absolute;
+            left: 47%;
+            top: 0;
+            opacity: 0.5
+        }
+
+        /* 譜面中的菱形點擊區 */
+        .press {
+            width: 12px;
+            height: 12px;
+            position: absolute;
+            left: 42%;
+            top: 85.2%;
+            background: black;
+            transform: rotate(45deg);
+        }
+
+        /* 影片 */
+        .peko {
+            position: fixed;
+            left: 23.2%;
+            top: 9%;
+            width: 48.5%;
+            height: 100%;
+        }
+
+        /* 按鈕 */
+        .onoffswitch {
+            position: relative;
+            width: 90px;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .onoffswitch-checkbox {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .onoffswitch-label {
+            display: block;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid #999999;
+            border-radius: 20px;
+        }
+
+        .onoffswitch-inner {
+            display: block;
+            width: 200%;
+            margin-left: -100%;
+            transition: margin 0.3s ease-in 0s;
+        }
+
+        .onoffswitch-inner:before,
+        .onoffswitch-inner:after {
+            display: block;
+            float: left;
+            width: 50%;
+            height: 30px;
+            padding: 0;
+            line-height: 30px;
+            font-size: 14px;
+            color: white;
+            font-family: Trebuchet, Arial, sans-serif;
+            font-weight: bold;
+            box-sizing: border-box;
+        }
+
+        .onoffswitch-inner:before {
+            content: "ON";
+            padding-left: 10px;
+            background-color: #34A7C1;
+            color: #FFFFFF;
+        }
+
+        .onoffswitch-inner:after {
+            content: "OFF";
+            padding-right: 10px;
+            background-color: #EEEEEE;
+            color: #999999;
+            text-align: right;
+        }
+
+        .onoffswitch-switch {
+            display: block;
+            width: 18px;
+            margin: 6px;
+            background: #FFFFFF;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 56px;
+            border: 2px solid #999999;
+            border-radius: 20px;
+            transition: all 0.3s ease-in 0s;
+        }
+
+        .onoffswitch-checkbox:checked+.onoffswitch-label .onoffswitch-inner {
+            margin-left: 0;
+        }
+
+        .onoffswitch-checkbox:checked+.onoffswitch-label .onoffswitch-switch {
+            right: 0px;
+        }
+
+        /* 動畫-------------------------------------------------------------------------------------------------------------- */
+        /* 音符 block 掉下來的動畫 */
+        @keyframes animation {
+            from {
+                top: 0%;
+
+            }
+
+            to {
+                top: 95%;
+            }
+        }
+
+        /* 點擊音符 block 替換成 block1 的動畫 */
+        @keyframes animation1 {
+            from {
+                transform: rotate(45deg);
+            }
+
+            to {
+                left: -20%;
+                top: -20%;
+                transform: rotate(300deg) scale(20);
+                opacity: 0
+            }
+        }
+
+        /* 按鍵按下的動畫 */
+        @keyframes animation2 {
+            from {
+                transform: translateY(0);
+                box-shadow: 0 5px #999;
+            }
+
+            to {
+                transform: translateY(5px);
+                box-shadow: 0 3px #666;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <div id="container">
+        <table id="game">
+            <tr>
+                <div class="key">A</div>
+                <td class="holes" id="hole-a">
+                    <div class="line"></div>
+                    <div class="press"></div>
+                </td>
+                <div class="key">S</div>
+                <td class="holes" id="hole-s">
+                    <div class="line"></div>
+                    <div class="press"></div>
+                </td>
+                <div class="key">D</div>
+                <td class="holes" id="hole-d">
+                    <div class="line"></div>
+                    <div class="press"></div>
+                </td>
+                <div class="key">J</div>
+                <td class="holes" id="hole-j">
+                    <div class="line"></div>
+                    <div class="press"></div>
+                </td>
+                <div class="key">K</div>
+                <td class="holes" id="hole-k">
+                    <div class="line"></div>
+                    <div class="press"></div>
+                </td>
+                <div class="key">L</div>
+                <td class="holes" id="hole-l">
+                    <div class="line"></div>
+                    <div class="press"></div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="info">
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" tabindex="0"
+                    checked>
+                <label class="onoffswitch-label" for="myonoffswitch">
+                    <span class="onoffswitch-inner"></span>
+                    <span class="onoffswitch-switch"></span>
+                </label>
+            </div>
+            <br>
+            還剩<span id="text-countdown">-</span>秒
+            <br>
+            目前分數: <span id="text-score">-</span>
+            <br>
+            <br>
+            最高紀錄:
+            <br>
+            玩家: <span id="highscore-player">-</span>
+            <br>
+            分數: <span id="highscore-score">-</span>
+        </div>
+    </div>
+    <script>
+
+        const container = document.getElementById('container')
+        const btnStart = document.getElementById('myonoffswitch')
+        const holes = document.getElementsByClassName('holes')
+        const textScore = document.getElementById('text-score')
+        const textHighscorePlayer = document.getElementById('highscore-player')
+        const textHighscore = document.getElementById('highscore-score')
+        const textCountdown = document.getElementById('text-countdown')
+        const key = document.getElementsByClassName('key')
+
+        // 聲音
+        const audio = new Audio()
+        audio.src = './oh.mp3'
+
+        let score = 0
+        // clear timeout interval 會一起把變數清掉 設定 let timer = 0 可以解決這問題
+        let timer = 0
+
+        let countdown = 60
+
+        // JSON key 值和要用的變數一樣可以簡寫 name:name 可以只寫 name
+        let highscore = { name: '', score: 0 }
+
+        // localStorage.getItem 取出儲存在網頁的資料 localStorage 只能存文字
+        const highStorage = JSON.parse(localStorage.getItem('wam'))
+
+        // 若取出的最高分數資料不是空的
+        if (highStorage !== null) {
+            highscore = highStorage
+            textHighscorePlayer.innerText = highscore.name
+            textHighscore.innerText = highscore.score
+        }
+
+        // 點擊開始遊戲要做的事--------------------------------------------------------------------------------------
+        btnStart.onclick = () => {
+            // 因為點擊遊戲開始後才會產生 block block1 所以 getElements 要寫在遊戲開始裡面
+            // 寫在最上層的話因為一開始還沒產生 block block1 會產生錯誤
+            const block = document.getElementsByClassName('block')
+            const block1 = document.getElementsByClassName('block1')
+
+            // 遊戲開始時先清除格子裡的音符
+            // 要寫兩個迴圈分別 remove()
+            for (let a of block) {
+                a.remove()
+            }
+            for (let b of block1) {
+                b.remove()
+            }
+
+            // 插入影片
+            const peko = document.createElement('video')
+            peko.classList.add('peko')
+            peko.src = "./peko.mp4"
+            container.prepend(peko)
+            peko.play()
+            peko.volume = 0.5
+
+            // 開始遊戲按鈕停用
+            btnStart.disabled = true
+
+            // 每次遊戲開始時分數和時間要重置 變數和網頁上的元素都要重置
+            score = 0
+            textScore.innerText = score
+
+            countdown = 60
+            textCountdown.innerText = countdown
+
+            // 因為 setInterval 會在設定的延遲後才跑第一次 所以先寫在 function 中先跑一次才不會有延遲
+            timer = setInterval(game, 1000)
+
+            // 呼叫 function
+            game()
+        }
+
+        // 開始遊戲後要重複做的事包成 function ******************************************************************************
+        const game = (event) => {
+            // 因為點擊遊戲開始後才會產生 peko 所以 getElementsBy 要寫在遊戲開始裡面
+            // 寫在最上層的話因為一開始還沒產生 peko 會產生錯誤
+            const peko = document.getElementsByClassName('peko')
+
+            // 倒數計時 改剩餘時間
+            countdown--
+            textCountdown.innerText = countdown
+
+            // 跑迴圈 隨機在編號 1~6 的譜面中生成音符 
+            for (let i = 0; i < 1; i++) {
+                const random = Math.floor(Math.random() * 6)
+
+                // 在隨機 holes 下一層新增 div 並 給 div 新增 block 的 class 
+                const block = document.createElement('div')
+                block.classList.add('block')
+                holes[random].appendChild(block)
+
+                // 若音符沒有點到 沒有替換成 block1 的話 隔三秒刪除
+                setTimeout(() => {
+                    if (!block.classList.contains('block1')) {
+                        block.remove()
+                    }
+                }, 3000);
+            }
+
+            // 時間到 遊戲結束要做的事----------------------------------------------------------------------------------
+            if (countdown <= 0) {
+                // 停止計時
+                clearInterval(timer)
+
+                // 暫停並刪除影片
+                for (let p of peko) {
+                    p.pause()
+                    p.remove()
+                }
+
+                audio.play()
+
+                // 倒數結束(遊戲結束)時跳出訊息
+                Swal.fire({
+                    title: '好油喔 PEKO (*^ω^*)',
+                    text: `你總共得了${score}分 PEKO`,
+                    imageUrl: './oil.jpg',
+                    imageWidth: 400,
+                    imageHeight: 400,
+                    imageAlt: 'Custom image',
+                })
+
+                // 開放開始遊戲按鈕
+                btnStart.disabled = false
+
+                btnStart.classList.add('onoffswitch-checkbox')
+
+                // 清除格子裡的音符
+                // 要寫兩個迴圈分別 remove()
+                for (let a of block) {
+                    a.remove()
+                }
+                for (let b of block1) {
+                    b.remove()
+                }
+
+                // 若目前分數>最高分數
+                if (score > highscore.score) {
+                    // 撥放音效
+                    audio.play()
+
+                    // 改掉分數和使用者名稱(變數)
+                    highscore.score = score
+                    highscore.name = prompt('最高分! 請輸入名字')
+                    if (highscore.name === null || highscore.name.length === 0) {
+                        highscore.name = '路人'
+                    }
+
+                    // 改掉分數和使用者名稱(網頁上的元素)
+                    textHighscorePlayer.innerText = highscore.name
+                    textHighscore.innerText = highscore.score
+
+                    // 將最高分的紀錄存進網頁 localStorage.setItem(存 wam 的資料在網頁中 關機後不會消失) value 必須是文字
+                    localStorage.setItem('wam', JSON.stringify(highscore))
+                }
+            }
+        }
+        // 開始遊戲後要重複做的事包成 function ******************************************************************************
+
+        // 點擊到 block 加一分 並替換成 block1 -------------------------------------------------------------------------------
+        for (const hole of holes) {
+            hole.onclick = (event) => {
+                // 偵測滑鼠點擊的高度
+                let hei = event.pageY
+                // 若是音符 block 且 滑鼠點擊的高度在設定範圍內才替換成 block1 同時加一分
+                if (event.target.classList.contains('block') && hei > 560 && hei < 640) {
+                    event.target.classList.replace('block', 'block1')
+                    score++
+                    textScore.innerText = score
+
+                    // 若點到音符 block 變成 block1 0.5秒後刪除
+                    setTimeout(() => {
+                        event.target.remove()
+                    }, 500)
+                }
+            }
+        }
+
+        // https://keycode.info/ 
+        // 鍵盤事件------------------------------------------------------------------------------------------------
+        document.onkeydown = (event) => {
+            if (event.code.includes('Key')) {
+                // 抓按鍵的 keycode 對應哪條譜
+                const target = document.getElementById(`hole-${event.key}`)
+
+                // 按鍵按下的效果
+                if (event.which == 65) {
+                    key[0].classList.add('key1')
+                    setTimeout(() => {
+                        key[0].classList.remove('key1')
+                    }, 100)
+                }
+                else if (event.which == 83) {
+                    key[1].classList.add('key1')
+                    setTimeout(() => {
+                        key[1].classList.remove('key1')
+                    }, 100)
+                }
+                else if (event.which == 68) {
+                    key[2].classList.add('key1')
+                    setTimeout(() => {
+                        key[2].classList.remove('key1')
+                    }, 100)
+                }
+                else if (event.which == 74) {
+                    key[3].classList.add('key1')
+                    setTimeout(() => {
+                        key[3].classList.remove('key1')
+                    }, 100)
+                }
+                else if (event.which == 75) {
+                    key[4].classList.add('key1')
+                    setTimeout(() => {
+                        key[4].classList.remove('key1')
+                    }, 100)
+                }
+                else if (event.which == 76) {
+                    key[5].classList.add('key1')
+                    setTimeout(() => {
+                        key[5].classList.remove('key1')
+                    }, 100)
+                }
+
+                // 抓鍵盤按下時音符 block 的高度
+                let hei1 = target.querySelector(".block").offsetTop;
+                // 若是音符 block 且 鍵盤按下時音符 block 的高度在設定範圍內才替換成 block1 同時加一分
+                if (target !== null && target.querySelector(".block").classList.contains('block') && hei1 > 300 && hei1 < 400) {
+                    target.querySelector(".block").classList.replace('block', 'block1')
+                    score++
+                    textScore.innerText = score
+
+                    // block 替換成 blcok1 的話 blcok1 0.5秒後刪除 
+                    setTimeout(() => {
+                        target.querySelector(".block1").remove()
+                    }, 500)
+                }
+            }
+        }
+
+    </script>
+</body>
+
+</html>
